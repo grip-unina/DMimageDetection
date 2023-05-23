@@ -41,6 +41,7 @@ In order to calculate the outputs of each model launch the script as shown below
 python main.py --data_dir /path/to/testset/dir --out_dir /path/to/output/dir --csv_file /path/to/csv/file
 
 ```
+The output CSV contains the logit values provided by the networks. The image is detected fake if the logit value is positive.
 Finally to generate the csv files containing the accuracies and aucs calculated per detection method and per generator architecture launche the last script as described.
 ```
 python metrics_evaluations.py --data_dir /path/to/testset/dir --out_dir /path/to/output/dir
