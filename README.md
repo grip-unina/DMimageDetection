@@ -35,6 +35,8 @@ Testset directory
 
 The annotations used to generate images with text to images models belong to the COCO Consortium and are licensed under a Creative Commons Attribution 4.0 License (https://cocodataset.org/#termsofuse).
 
+If you plan to use the dataset, please cite our work.
+
 ## Traning-set
 
 #### 1) ProGAN Traning-set
@@ -42,6 +44,8 @@ For training using ProGAN images, we used the traning-set provided by ["CNN-gene
  
 #### 2) Latent Diffusion Traning-set
 For training using Latent Diffusion images, we generated 200K fake images, while the 200K real images come from two public datasets, [COCO - Common Objects in Context](https://cocodataset.org/#home) and  [LSUN - Large-scale Scene Understanding](https://www.yf.io/p/lsun).
+The fake images and the lists of used real images can be downloaded [here](https://www.grip.unina.it/download/prog/DMimageDetection/latent_diffusion_trainingset.zip).
+If you plan to use the dataset, please cite our work.
 
 ## Code
 In this repository it is also provided a python script to apply on each image the processing outlined by the csv file.
