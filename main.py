@@ -41,7 +41,8 @@ def runnig_tests(data_path, output_dir, weights_dir, csv_file):
 
     # NOTE: Substitute the device with 'cpu' if gpu acceleration is not required
 
-    device = 'cuda:0'  # in ['cpu', 'cuda:0']
+    # device = 'cuda:0'  # in ['cpu', 'cuda:0']
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     batch_size = 1
 
     ### list of models
