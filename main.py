@@ -9,23 +9,22 @@
 # http://www.grip.unina.it/download/LICENSE_OPEN.txt
 #
 
-import torch  # >=1.6.0
 import os
+import glob
+import argparse
+import torch  # >=1.6.0
 import pandas
 import numpy as np
 import tqdm
-import glob
-import sys
 from PIL import Image
 import torchvision.transforms as transforms
-import argparse
 
 from normalization import CenterCropNoPad, get_list_norm
 from normalization2 import PaddingWarp
 from get_method_here import get_method_here, def_model
 
 
-def runnig_tests(data_path, output_dir, weights_dir, csv_file):
+def running_tests(data_path, output_dir, weights_dir, csv_file):
     DATA_PATH = data_path
 
     print("CURRENT OUT FOLDER")
@@ -193,7 +192,7 @@ def main():
     parser.add_argument("--weights_dir", type=str, help="The path to the weights of the networks", default="./weights")
     parser.add_argument("--csv_file", type=str, help="The path to the csv file", default="./TestSetCSV/operations.csv")
     args = vars(parser.parse_args())
-    runnig_tests(args['data_dir'], args['out_dir'], args['weights_dir'], args['csv_file'])
+    running_tests(args['data_dir'], args['out_dir'], args['weights_dir'], args['csv_file'])
 
 
 main()
