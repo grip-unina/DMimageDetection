@@ -188,10 +188,10 @@ def runnig_tests(data_path, output_dir, weights_dir, csv_file):
 def main():
     print("Running the Tests")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type=str, help="The path to the images of the testset on which the operations have been pre applied with the provided code", default="./TestSet/")
+    parser.add_argument("--data_dir", type=str, help="The path to the images of the testset on which the operations have been pre applied with the provided code", default="./TestSetCSV/")
     parser.add_argument("--out_dir", type=str, help="The Path where the csv containing the outputs of the networks should be saved", default="./results_tst")
     parser.add_argument("--weights_dir", type=str, help="The path to the weights of the networks", default="./weights")
-    parser.add_argument("--csv_file", type=str, help="The path to the csv file", default="./TestSet/operations.csv")
+    parser.add_argument("--csv_file", type=str, help="The path to the csv file", default="./TestSetCSV/operations.csv")
     args = vars(parser.parse_args())
     runnig_tests(args['data_dir'], args['out_dir'], args['weights_dir'], args['csv_file'])
 
