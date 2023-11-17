@@ -132,4 +132,4 @@ dmypy.json
 weights
 TestSet
 TestSetCSV
-output
+results_tst
