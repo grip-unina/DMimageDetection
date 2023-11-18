@@ -39,9 +39,9 @@ def run_single_test(image_path, weights_dir):
 
     models_dict = dict()
     transform_dict = dict()
-    for model_name in models_list:
+    for model_name, model_alias in models_list.items():
         _, model_path, arch, norm_type, patch_size = get_method_here(
-            models_list[model_name], weights_path=weights_dir
+            model_alias, weights_path=weights_dir
         )
 
         model = def_model(arch, model_path, localize=False)
@@ -69,10 +69,10 @@ def run_single_test(image_path, weights_dir):
     img = Image.open(image_path).convert("RGB")
     logits = {}
     with torch.no_grad():
-        for model_name in models_dict:
-            transformed_img = transform_dict[models_dict[model_name][0]](img)
+        for model_name, (transform_key, model) in models_dict.items():
+            transformed_img = transform_dict[transform_key](img)
             transformed_img = transformed_img.unsqueeze(0).to(device)
-            out_tens = models_dict[model_name][1](transformed_img).cpu().numpy()
+            out_tens = model(transformed_img).cpu().numpy()
 
             if out_tens.size == 1:
                 logits[model_name] = out_tens.item()
