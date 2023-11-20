@@ -8,9 +8,9 @@ It prints out the logits returned by each model and the final label based on the
 
 import argparse
 import numbers
+import os
 import torch
 import psutil
-import os
 import numpy as np
 from PIL import Image
 import torchvision.transforms as transforms
@@ -51,7 +51,6 @@ def load_model(arch, model_path):
         torch.nn.Module: The loaded model.
     """
     if arch == 'res50stride1':
-        import networks.networks.resnet_mod as resnet_mod
         model = resnet_mod.resnet50(num_classes=1, gap_size=1, stride0=1)
     else:
         raise ValueError(f"Unsupported architecture: {arch}")
