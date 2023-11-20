@@ -9,6 +9,8 @@ It prints out the logits returned by each model and the final label based on the
 import argparse
 import numbers
 import torch
+import psutil
+import os
 import numpy as np
 from PIL import Image
 import torchvision.transforms as transforms
@@ -28,6 +30,14 @@ models_config = {
         "patch_size": None
     }
 }
+
+def print_memory_usage():
+    """
+    Prints the current memory usage of the process.
+    """
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    print(f"Memory used: {mem_info.rss / (1024 * 1024):.2f} MB")
 
 def load_model(arch, model_path):
     """
@@ -139,7 +149,7 @@ def get_list_norm(norm_type):
         raise ValueError(f"Unknown norm type: {norm_type}")
     return transforms_list
 
-def run_single_test(image_path, weights_dir):
+def run_single_test(image_path, weights_dir, debug):
     """
     Runs inference on a single image using specified models and weights.
     
@@ -158,6 +168,9 @@ def run_single_test(image_path, weights_dir):
     for model_name, config in models_config.items():
         model = load_model(config["arch"], config["model_path"])
         model = model.to(device).eval()
+        if debug:
+            print(f"Model {model_name} loaded.")
+            print_memory_usage()
         transform = transforms.Compose(get_list_norm(config["norm_type"]))
         models_dict[model_name] = model
         transform_dict[model_name] = transform
@@ -170,6 +183,7 @@ def run_single_test(image_path, weights_dir):
             transformed_img = transformed_img.unsqueeze(0).to(device)
             out_tens = model(transformed_img).cpu().numpy()
             logits[model_name] = np.mean(out_tens, (2, 3)).item()
+            print_memory_usage()
 
     print(f"Image: {image_path}")
     print("Logits:")
@@ -194,8 +208,9 @@ def main():
         "--weights_dir", type=str, help="The path to the weights of the networks", default="./weights"
     )
     parser.add_argument("--image_path", type=str, help="The path to the image file")
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode to print memory usage")
     args = parser.parse_args()
-    run_single_test(args.image_path, args.weights_dir)
+    run_single_test(args.image_path, args.weights_dir, debug=args.debug)
 
 if __name__ == "__main__":
     main()
