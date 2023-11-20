@@ -8,6 +8,8 @@ It prints out the logits returned by each model and the final label based on the
 
 import argparse
 import numbers
+import time
+import json
 import os
 import torch
 import psutil
@@ -164,55 +166,66 @@ def get_list_norm(norm_type):
 def run_single_test(image_path, weights_dir, debug):
     """
     Runs inference on a single image using specified models and weights.
+    Loads each model individually to optimize memory usage.
 
     Args:
-        image_path (str): Path to the image file on which inference is to be performed.
+        image_path (str): Path to the image file for inference.
         weights_dir (str): Directory where the model weights are stored.
+        debug (bool): Flag to enable debug mode for additional information.
 
-    The function loads the models, applies the necessary transformations to the image,
-    and then feeds the image to the models. It prints out the logits from each model
-    and the final label (True/False) based on these logits.
+    Returns:
+        dict: JSON object with detection results and execution time.
     """
+    start_time = time.time()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    models_dict = {}
-    transform_dict = {}
-    for model_name, config in models_config.items():
-        model = load_model(config["arch"], config["model_path"])
-        model = model.to(device).eval()
-        if debug:
-            print(f"Model {model_name} loaded.")
-            print_memory_usage()
-        transform = transforms.Compose(get_list_norm(config["norm_type"]))
-        models_dict[model_name] = model
-        transform_dict[model_name] = transform
+    logits = {}
 
     img = Image.open(image_path).convert("RGB")
-    logits = {}
-    with torch.no_grad():
-        for model_name, model in models_dict.items():
-            transformed_img = transform_dict[model_name](img)
+
+    for model_name, config in models_config.items():
+        # Load and process each model individually
+        model = load_model(config["arch"], config["model_path"])
+        model = model.to(device).eval()
+        transform = transforms.Compose(get_list_norm(config["norm_type"]))
+
+        with torch.no_grad():
+            transformed_img = transform(img)
             transformed_img = transformed_img.unsqueeze(0).to(device)
             out_tens = model(transformed_img).cpu().numpy()
             logits[model_name] = np.mean(out_tens, (2, 3)).item()
+
+        # Unload model from memory
+        del model
+        torch.cuda.empty_cache()
+
+        if debug:
+            print(f"Model {model_name} processed.")
             print_memory_usage()
 
-    print(f"Image: {image_path}")
-    print("Logits:")
-    for model_name, logit in logits.items():
-        print(f"{model_name}: {logit}")
-    print(
-        "Label: " + ("True" if any(value > 0 for value in logits.values()) else "False")
-    )
+    execution_time = time.time() - start_time
+    label = "True" if any(value > 0 for value in logits.values()) else "False"
+
+    # Construct output JSON
+    output = {
+        "product": "diffusion-model-detector",
+        "detection": {
+            "logit": logits,
+            "IsDiffusionImage?": label,
+            "ExecutionTime": execution_time
+        }
+    }
+
+    return output
 
 
 def main():
     """
     The main function of the script. It parses command-line arguments and runs the inference test.
 
-    The function expects two command-line arguments:
+    The function expects three command-line arguments:
     - `--weights_dir`: The directory where the model weights are stored.
     - `--image_path`: The path to the image file on which inference is to be performed.
+    - `--debug`: Show memory usage or not
 
     After parsing the arguments, it calls the `run_single_test` function to perform inference
     on the specified image using the provided model weights.
@@ -230,7 +243,8 @@ def main():
         "--debug", action="store_true", help="Enable debug mode to print memory usage"
     )
     args = parser.parse_args()
-    run_single_test(args.image_path, args.weights_dir, debug=args.debug)
+    output = run_single_test(args.image_path, args.weights_dir, debug=args.debug)
+    print(json.dumps(output, indent=4))
 
 
 if __name__ == "__main__":
