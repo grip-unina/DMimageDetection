@@ -21,15 +21,16 @@ models_config = {
         "model_path": "./weights/Grag2021_progan/model_epoch_best.pth",
         "arch": "res50stride1",
         "norm_type": "resnet",
-        "patch_size": None
+        "patch_size": None,
     },
     "Grag2021_latent": {
         "model_path": "./weights/Grag2021_latent/model_epoch_best.pth",
         "arch": "res50stride1",
         "norm_type": "resnet",
-        "patch_size": None
-    }
+        "patch_size": None,
+    },
 }
+
 
 def print_memory_usage():
     """
@@ -39,10 +40,11 @@ def print_memory_usage():
     mem_info = process.memory_info()
     print(f"Memory used: {mem_info.rss / (1024 * 1024):.2f} MB")
 
+
 def load_model(arch, model_path):
     """
     Loads the specified model architecture with given weights.
-    
+
     Args:
         arch (str): The architecture of the model.
         model_path (str): Path to the model's weights.
@@ -50,17 +52,17 @@ def load_model(arch, model_path):
     Returns:
         torch.nn.Module: The loaded model.
     """
-    if arch == 'res50stride1':
+    if arch == "res50stride1":
         model = resnet_mod.resnet50(num_classes=1, gap_size=1, stride0=1)
     else:
         raise ValueError(f"Unsupported architecture: {arch}")
 
     # Load the entire checkpoint
-    checkpoint = torch.load(model_path, map_location='cpu')
+    checkpoint = torch.load(model_path, map_location="cpu")
 
     # Extract the state dictionary for the model
-    if 'model' in checkpoint:
-        state_dict = checkpoint['model']
+    if "model" in checkpoint:
+        state_dict = checkpoint["model"]
     else:
         raise KeyError("No model state_dict found in the checkpoint file")
 
@@ -68,6 +70,7 @@ def load_model(arch, model_path):
     model.load_state_dict(state_dict)
 
     return model
+
 
 def center_crop(img, output_size):
     """
@@ -84,29 +87,36 @@ def center_crop(img, output_size):
         output_size = (int(output_size), int(output_size))
     image_width, image_height = img.size[1], img.size[0]
     crop_height, crop_width = output_size
-    crop_top = int(round((image_height - crop_height) / 2.))
-    crop_left = int(round((image_width - crop_width) / 2.))
-    return img.crop((crop_left, crop_top, crop_left + crop_width, crop_top + crop_height))
+    crop_top = int(round((image_height - crop_height) / 2.0))
+    crop_left = int(round((image_width - crop_width) / 2.0))
+    return img.crop(
+        (crop_left, crop_top, crop_left + crop_width, crop_top + crop_height)
+    )
 
-class CenterCropNoPad():
+
+class CenterCropNoPad:
     """
     Applies center crop to the image without padding.
     """
+
     def __init__(self, siz):
         self.siz = siz
 
     def __call__(self, img):
         return center_crop(img, self.siz)
 
-class PaddingWarp():
+
+class PaddingWarp:
     """
     Applies padding to the image.
     """
+
     def __init__(self, siz):
         self.siz = siz
 
     def __call__(self, img):
         return padding_wrap(img, self.siz)
+
 
 def padding_wrap(img, output_size):
     """
@@ -127,6 +137,7 @@ def padding_wrap(img, output_size):
             new_img.paste(img, (x_offset, y_offset))
     return new_img
 
+
 def get_list_norm(norm_type):
     """
     Gets the list of transformations based on the normalization type.
@@ -138,20 +149,22 @@ def get_list_norm(norm_type):
         list: List of transformations.
     """
     transforms_list = list()
-    if norm_type == 'resnet':
+    if norm_type == "resnet":
         transforms_list.append(transforms.ToTensor())
-        transforms_list.append(transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                    std=[0.229, 0.224, 0.225]))
-    elif norm_type == 'none':
+        transforms_list.append(
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        )
+    elif norm_type == "none":
         transforms_list.append(transforms.ToTensor())
     else:
         raise ValueError(f"Unknown norm type: {norm_type}")
     return transforms_list
 
+
 def run_single_test(image_path, weights_dir, debug):
     """
     Runs inference on a single image using specified models and weights.
-    
+
     Args:
         image_path (str): Path to the image file on which inference is to be performed.
         weights_dir (str): Directory where the model weights are stored.
@@ -188,7 +201,10 @@ def run_single_test(image_path, weights_dir, debug):
     print("Logits:")
     for model_name, logit in logits.items():
         print(f"{model_name}: {logit}")
-    print("Label: " + ("True" if any(value > 0 for value in logits.values()) else "False"))
+    print(
+        "Label: " + ("True" if any(value > 0 for value in logits.values()) else "False")
+    )
+
 
 def main():
     """
@@ -204,12 +220,18 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--weights_dir", type=str, help="The path to the weights of the networks", default="./weights"
+        "--weights_dir",
+        type=str,
+        help="The path to the weights of the networks",
+        default="./weights",
     )
     parser.add_argument("--image_path", type=str, help="The path to the image file")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode to print memory usage")
+    parser.add_argument(
+        "--debug", action="store_true", help="Enable debug mode to print memory usage"
+    )
     args = parser.parse_args()
     run_single_test(args.image_path, args.weights_dir, debug=args.debug)
+
 
 if __name__ == "__main__":
     main()
