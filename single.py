@@ -95,14 +95,13 @@ def get_list_norm(norm_type):
     return transforms_list
 
 
-def run_single_test(image_path, weights_dir, debug):
+def run_single_test(image_path, debug):
     """
     Runs inference on a single image using specified models and weights.
     Loads each model individually to optimize memory usage.
 
     Args:
         image_path (str): Path to the image file for inference.
-        weights_dir (str): Directory where the model weights are stored.
         debug (bool): Flag to enable debug mode for additional information.
 
     Returns:
@@ -155,7 +154,6 @@ def main():
     The main function of the script. It parses command-line arguments and runs the inference test.
 
     The function expects three command-line arguments:
-    - `--weights_dir`: The directory where the model weights are stored.
     - `--image_path`: The path to the image file on which inference is to be performed.
     - `--debug`: Show memory usage or not
 
@@ -164,18 +162,12 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--weights_dir",
-        type=str,
-        help="The path to the weights of the networks",
-        default="./weights",
-    )
     parser.add_argument("--image_path", type=str, help="The path to the image file")
     parser.add_argument(
         "--debug", action="store_true", help="Enable debug mode to print memory usage"
     )
     args = parser.parse_args()
-    output = run_single_test(args.image_path, args.weights_dir, debug=args.debug)
+    output = run_single_test(args.image_path, debug=args.debug)
     print(json.dumps(output, indent=4))
 
 
