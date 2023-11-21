@@ -7,7 +7,6 @@ It prints out the logits returned by each model and the final label based on the
 """
 
 import argparse
-import numbers
 import time
 import json
 import os
@@ -72,73 +71,6 @@ def load_model(arch, model_path):
     model.load_state_dict(state_dict)
 
     return model
-
-
-def center_crop(img, output_size):
-    """
-    Performs center cropping of the image.
-
-    Args:
-        img (PIL.Image): Input image.
-        output_size (tuple): Desired output size.
-
-    Returns:
-        PIL.Image: Center cropped image.
-    """
-    if isinstance(output_size, numbers.Number):
-        output_size = (int(output_size), int(output_size))
-    image_width, image_height = img.size[1], img.size[0]
-    crop_height, crop_width = output_size
-    crop_top = int(round((image_height - crop_height) / 2.0))
-    crop_left = int(round((image_width - crop_width) / 2.0))
-    return img.crop(
-        (crop_left, crop_top, crop_left + crop_width, crop_top + crop_height)
-    )
-
-
-class CenterCropNoPad:
-    """
-    Applies center crop to the image without padding.
-    """
-
-    def __init__(self, siz):
-        self.siz = siz
-
-    def __call__(self, img):
-        return center_crop(img, self.siz)
-
-
-class PaddingWarp:
-    """
-    Applies padding to the image.
-    """
-
-    def __init__(self, siz):
-        self.siz = siz
-
-    def __call__(self, img):
-        return padding_wrap(img, self.siz)
-
-
-def padding_wrap(img, output_size):
-    """
-    Wraps the image with padding.
-
-    Args:
-        img (PIL.Image): Input image.
-        output_size (tuple): Output size after padding.
-
-    Returns:
-        PIL.Image: Padded image.
-    """
-    if isinstance(output_size, numbers.Number):
-        output_size = (int(output_size), int(output_size))
-    new_img = Image.new(img.mode, output_size)
-    for x_offset in range(0, output_size[0], img.size[0]):
-        for y_offset in range(0, output_size[1], img.size[1]):
-            new_img.paste(img, (x_offset, y_offset))
-    return new_img
-
 
 def get_list_norm(norm_type):
     """
