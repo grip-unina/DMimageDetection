@@ -134,7 +134,7 @@ def run_single_test(image_path, debug):
             print_memory_usage()
 
     execution_time = time.time() - start_time
-    label = "True" if any(value > 0 for value in logits.values()) else "False"
+    label = "True" if any(value < 0 for value in logits.values()) else "False"
 
     # Construct output JSON
     output = {
