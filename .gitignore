@@ -134,3 +134,8 @@ TestSet
 TestSetCSV
 results_tst
 .vscode
+
+*.jpg
+*.png
+*.jpeg
+*.webp
