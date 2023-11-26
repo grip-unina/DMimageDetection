@@ -164,19 +164,19 @@ def run_single_test(image_path, debug):
             print_memory_usage()
 
     execution_time = time.time() - start_time
-    label = "True" if any(value < 0 for value in logits.values()) else "False"
+    label = "False" if any(value < 0 for value in logits.values()) else "True"
 
     # Construct output JSON
-    output = {
-        "product": "diffusion-model-detector",
-        "detection": {
-            "logit": logits,
-            "IsDiffusionImage?": label,
-            "ExecutionTime": execution_time
-        }
+    detection_output = {
+        "model": "diffusion-model-detector",
+        "inferenceResults": {
+            "logits": logits,
+            "isDiffusionImage": label,
+            "executionTime": execution_time,
+        },
     }
 
-    return output
+    return detection_output
 
 
 def main():
