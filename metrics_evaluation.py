@@ -33,8 +33,7 @@ def calculate_metrics(csv_path, output_path):
         "count0": lambda y_label, y_pred: np.sum(y_label == 0),
     }
 
-    # db0s = ['real_coco_valid', 'real_imagenet_val', 'real_ucid', ]
-    db0s = ["test"]
+    db0s = ['real_coco_valid', 'real_imagenet_val', 'real_ucid', ]
 
     db1d = {
         "ProGAN": ["progan_lsun"],
@@ -119,6 +118,7 @@ def calculate_metrics(csv_path, output_path):
         tab_all.append(tab_r)
         tab_both = pandas.concat(tab_all)
         label = tab_both["label"]
+        print(tab_both)
         for method in mm:
             predict = tab_both[method]
             v = predict[np.isfinite(predict)]

@@ -164,20 +164,47 @@ def run_single_test(image_path, debug):
             print_memory_usage()
 
     execution_time = time.time() - start_time
-    label = "True" if any(value > 0 for value in logits.values()) else "False"
 
-    # Construct output JSON
+    # Calculate if the image is fake or not
+
+    threshold=0.5
+
+    def calculate_sigmoid_probabilities(logits_dict):
+        """
+        Adds sigmoid probabilities to the logits dictionary.
+
+        Parameters:
+        logits_dict (dict): Dictionary containing logits.
+
+        Returns:
+        dict: Updated dictionary with sigmoid probabilities.
+        """
+        sigmoid_probs = {}
+        for model, logit in logits_dict.items():
+            sigmoid_prob = 1 / (1 + np.exp(-logit))  # Sigmoid function
+            sigmoid_probs[model] = sigmoid_prob
+        return sigmoid_probs
+
+    sigmoid_probs = calculate_sigmoid_probabilities(logits)
+
+    for prob in sigmoid_probs.values():
+        if prob >= threshold:
+            isDifussionImage = True  # Image is classified as fake
+            break
+        else:
+            isDifussionImage = False
+
     detection_output = {
-        "model": "diffusion-model-detector",
+        "model": "gan-model-detector",
         "inferenceResults": {
             "logits": logits,
-            "isDiffusionImage": label,
+            "probabilities": sigmoid_probs,
+            "isDiffusionImage": isDifussionImage,
             "executionTime": execution_time,
         },
     }
 
     return detection_output
-
 
 def main():
     """
