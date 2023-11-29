@@ -56,7 +56,7 @@ def csv_operations(input_dir, output_dir, csv_file):
             cropsize = int(row[1])
 
             # select the type of interpolation
-            interp = Image.ANTIALIAS if cropsize > output_size else Image.CUBIC
+            interp = Image.LANCZOS if cropsize > output_size else Image.BICUBIC
 
             # read the position of the crop
             x1 = int(row[2])
